@@ -86,7 +86,7 @@ fn process_message(prompt: String) -> Result<Exchange, String> {
         .collect::<Vec<String>>()
         .join("\n");
 
-    let full_prompt = format!(
+    let instructions = format!(
         r#"
                                 You are used as part of an application as an assistant that helps developers build and run applications on Golem or Golem Cloud (“Golem Assistant”).
                                 
@@ -137,9 +137,10 @@ fn process_message(prompt: String) -> Result<Exchange, String> {
         &context, &context_urls
     );
 
-    println!("{}", full_prompt);
+    println!("INSTRUCTIONS:\n{}", instructions);
+    println!("INPUT:\n{}", prompt);
 
-    let llm_response = ask_model(full_prompt);
+    let llm_response = ask_model(instructions, prompt.clone());
 
     println!("{:#?}", llm_response);
 
@@ -165,14 +166,18 @@ fn process_message(prompt: String) -> Result<Exchange, String> {
     }
 }
 
-fn ask_model(input: String) -> Result<LlmResponse, String> {
+fn ask_model(instructions: String, input: String) -> Result<LlmResponse, String> {
     let open_api_key = std::env::var("OPENAI_API_KEY").expect("OPENAI_API_KEY not present");
     let bearer_token = format!("Bearer {}", open_api_key);
     let client = Client::new();
     let body = serde_json::json!({
-        "model": "gpt-4o-search-preview",
+        "model": "gpt-4o",
         "stream": false,
         "messages": [
+            {
+                "role": "system",
+                "content": instructions
+            },
             {
                 "role": "user",
                 "content": input
