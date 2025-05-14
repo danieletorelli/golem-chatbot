@@ -125,12 +125,6 @@ fn process_message(prompt: String) -> Result<Exchange, String> {
                                 ```
                                 
                                 ---
-
-                                USER PROMPT:
-                                
-                                ```
-                                {}
-                                ```
                                 
                                 If in the user prompt there are new URLs, you should also visit them and use them to expand the context before responding.
                                 You should also add the newly discovered URLs in the user prompt to the list of URLs in the response.
@@ -140,7 +134,7 @@ fn process_message(prompt: String) -> Result<Exchange, String> {
                                 If it might help, add any useful link from the documentation website in the response.
                                 If possible, your answer should be relevant to the programming language that the user is using.
                             "#,
-        &context, &context_urls, prompt
+        &context, &context_urls
     );
 
     println!("{}", full_prompt);
