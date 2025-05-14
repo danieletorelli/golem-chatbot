@@ -172,6 +172,7 @@ fn ask_model(instructions: String, input: String) -> Result<LlmResponse, String>
     let client = Client::new();
     let body = serde_json::json!({
         "model": "gpt-4o",
+        "temperature": 0.2,
         "stream": false,
         "messages": [
             {
