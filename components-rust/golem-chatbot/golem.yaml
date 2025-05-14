@@ -1,0 +1,74 @@
+# Schema for IDEA:
+# $schema: https://schema.golem.cloud/app/golem/1.2.2/golem.schema.json
+# Schema for vscode-yaml
+# yaml-language-server: $schema=https://schema.golem.cloud/app/golem/1.2.2/golem.schema.json
+
+# See https://learn.golem.cloud/docs/app-manifest#field-reference for field reference
+# For creating APIs see https://learn.golem.cloud/invoke/making-custom-apis
+
+components:
+  golem:chatbot:
+    template: rust
+    env:
+      # create under https://platform.openai.com/settings/<project>/api-keys
+      OPENAI_API_KEY: ""
+
+dependencies:
+  golem:chatbot:
+    - type: wasm
+      url: https://github.com/golemcloud/golem-llm/releases/download/v0.1.2/golem_llm_openai.wasm
+
+httpApi:
+  definitions:
+    golem-chatbot:
+      version: '0'
+      routes:
+      - method: POST
+        path: /v1/sessions/{session-id}
+        binding:
+          type: default
+          componentName: "golem:chatbot"
+          response: |
+            let session-id: string = request.path.session-id;
+            let worker = instance("session-${session-id}");
+            worker.initialize({
+              github-username: request.body.github-username,
+              github-auth-token: request.body.github-auth-token
+            });
+            {status: 200}
+      - method: Get
+        path: /v1/sessions/{session-id}/notifications
+        binding:
+          type: default
+          componentName: "golem:chatbot"
+          response: |
+            let session-id: string = request.path.session-id;
+            let worker = instance("session-${session-id}");
+            let result = worker.get-whats-new();
+            {status: 200, body: result}
+      - method: Post
+        path: /v1/sessions/{session-id}/seen-notifications
+        binding:
+          type: default
+          componentName: "golem:chatbot"
+          response: |
+            let session-id: string = request.path.session-id;
+            let notification-id: string = request.body.notification-id;
+            let worker = instance("session-${session-id}");
+            worker.mark-notification-seen(notification-id);
+            {status: 200}
+
+  # Uncomment if you want to deploy your api
+  # deployments:
+  #   local:
+  #   - host: localhost:9006
+  #     definitions:
+  #     - golem-chatbot
+
+  # Example for adding dependencies for Worker to Worker communication:
+# See https://learn.golem.cloud/docs/app-manifest#fields_dependencies for more information
+#
+#dependencies:
+#  golem:chatbot:
+#  - target: <target component name to be called>
+#    type: wasm-rpc
