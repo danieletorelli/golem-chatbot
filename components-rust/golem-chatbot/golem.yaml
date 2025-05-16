@@ -11,7 +11,7 @@ components:
     template: rust
     env:
       # create under https://platform.openai.com/settings/<project>/api-keys
-      OPENAI_API_KEY: "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"
+      OPENAI_API_KEY: ""
 
 dependencies:
   golem:chatbot:
